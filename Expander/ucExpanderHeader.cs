@@ -28,8 +28,9 @@ using System.Windows.Forms;
 
 namespace Expander
 {
-    public partial class ucExpanderHeader : UserControl
+    public partial class ucExpanderHeader : Panel
     {
+        private static Padding _defaultPadding = new Padding(3);
         private int _heightCache;
         private State _isExpanded = State.Expanded;
         private int _collapsedHeight = 27;
@@ -168,6 +169,16 @@ namespace Expander
         {
             get { return lblHeaderTextDisplay.ForeColor; }
             set { lblHeaderTextDisplay.ForeColor = value; }
+        }
+
+        [Browsable(true)]
+        [Category("Extra")]
+        [DisplayName("Padding")]
+        [DefaultValue(null)]
+        public Padding Padding
+        {
+            get { return pExpanderContentBody.Padding; }
+            set { pExpanderContentBody.Padding = value; }
         }
 
         #endregion

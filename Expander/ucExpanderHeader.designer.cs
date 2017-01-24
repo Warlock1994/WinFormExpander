@@ -152,13 +152,10 @@
             // 
             // ucExpanderHeader
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.Brown;
             this.Controls.Add(this.pBody);
             this.Name = "ucExpanderHeader";
             this.Size = new System.Drawing.Size(423, 284);
-            this.Load += new System.EventHandler(this.ucExpanderHeader_Load);
             this.cntxtBtnMenu.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbHeaderPictureDisplay)).EndInit();
             this.pBody.ResumeLayout(false);
