@@ -1,5 +1,5 @@
 # WinFormExpander
-A custom Expander made for Windows forms in C#.
+A custom Expander made for Windows Forms in C#.
 
 Preview:
 ![Preview:](http://i.imgur.com/puCQh6S.gif)
