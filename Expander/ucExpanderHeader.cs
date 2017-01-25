@@ -3,10 +3,10 @@
 // ***********************************************************************
 // Assembly         : WinFormExpander\Expander\ucExpanderHeader.cs
 // Author           : Danny Patten
-// Created          : 24 - 01 - 2017 at 13:18h
+// Created          : 24 - 01 - 2017 at 16:43h
 // 
 // Last Modified By : Danny Patten
-// Last Modified On : 24 - 01 - 2017 at 14:40h
+// Last Modified On : 24 - 01 - 2017 at 22:27h
 // ***********************************************************************
 // Copyright © 2016 - 2017, Danny Patten - All Rights Reserved
 // 
@@ -21,25 +21,19 @@
 using System;
 using System.ComponentModel;
 using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 
 #endregion
 
 namespace Expander
 {
-    public partial class ucExpanderHeader : Panel
+    internal partial class ucExpanderHeader : UserControl
     {
-        private static Padding _defaultPadding = new Padding(3);
-        private int _heightCache;
-        private State _isExpanded = State.Expanded;
-        private int _collapsedHeight = 27;
-
-        public enum State
-        {
-            Collapsed = 0,
-            Expanded = 1,
-        }
+        /// <summary>
+        /// Set flag for expand or collapse button
+        /// (true - expanded, false - collapsed)
+        /// </summary>
+        private bool _isExpanded;
 
         public ucExpanderHeader()
         {
@@ -47,198 +41,99 @@ namespace Expander
 
             Images.CreateBitmaps();
 
-            lblHeaderTextDisplay.Text = "Title";
-            
-            _heightCache = Size.Height;
+            Text = "Title";
 
-            ShowMenuButton = false;
             btnHeaderMenuDisplay.Visible = false;
             btnHeaderMenuDisplay.BackgroundImage = Images.MenuBtnImage;
             btnHeaderMenuDisplay.BackgroundImageLayout = ImageLayout.Center;
             pbHeaderPictureDisplay.BackgroundImageLayout = ImageLayout.Center;
 
-            InitializeState();
+            Margin = new Padding(0);
+            pBody.Margin = new Padding(0);
+            pBody.Padding = new Padding(0);
+
+            _isExpanded = false;
         }
 
-        #region Category: Header
-
         /// <summary>
-        /// Handles the Click event of the header control.
+        /// Set flag for expand or collapse button
+        /// (true - expanded, false - collapsed)
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void header_Click(object sender, EventArgs e)
-        {
-            ExpandCollapse();
-        }
-
-        #endregion
-
-        #region Category: Settings
-
-        /// <summary>
-        /// Gets or sets the color of the expander header.
-        /// </summary>
-        /// <value>
-        /// The color of the expander header.
-        /// </value>
         [Browsable(true)]
-        [Category("Extra")]
-        [DisplayName("Expander Color")]
-        [DefaultValue(null)]
-        public Color ExpanderHeaderColor
+        [Category("Expander")]
+        [Description("Expand or collapse button.")]
+        public bool IsExpanded
         {
-            get { return pHeader.BackColor; }
+            get { return _isExpanded; }
             set
             {
-                pHeader.BackColor = value;
-                pBody.BackColor = value;
+                _isExpanded = value;
+                OnExpandCollapse();
             }
         }
 
-        /// <summary>
-        /// Gets or sets the color of the expander content body.
-        /// </summary>
-        /// <value>
-        /// The color of the expander content body.
-        /// </value>
         [Browsable(true)]
-        [Category("Extra")]
-        [DisplayName("Expander ContentBodyColor")]
-        [DefaultValue(null)]
-        public Color ExpanderContentBodyColor
+        [Category("Expander")]
+        public override Color BackColor
         {
-            get { return pExpanderContentBody.BackColor; }
-            set { pExpanderContentBody.BackColor = value; }
+            get { return base.BackColor; }
+            set { base.BackColor = value; }
         }
 
-
-        /// <summary>
-        /// Gets or sets a value indicating whether to show the menu button.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [show menu button]; otherwise, <c>false</c>.
-        /// </value>
         [Browsable(true)]
-        [Category("Extra")]
-        [DisplayName("Show Menu button")]
-        [Description("Determines whether the Menu button control is shown.")]
-        [DefaultValue(false)]
-        public bool ShowMenuButton
-        {
-            get { return btnHeaderMenuDisplay.Visible; }
-            set { btnHeaderMenuDisplay.Visible = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        [Browsable(true)]
-        [Category("Extra")]
-        [DisplayName("Header Title")]
-        [DefaultValue("Title")]
-        public string Title
+        [Category("Expander")]
+        public sealed override string Text
         {
             get { return lblHeaderTextDisplay.Text; }
             set { lblHeaderTextDisplay.Text = value; }
         }
 
         /// <summary>
-        /// Gets or sets the header font.
+        /// Font used for displays header text
         /// </summary>
-        /// <value>
-        /// The header font.
-        /// </value>
-        [Browsable(true)]
-        [Category("Extra")]
-        [DisplayName("Header Font")]
-        public Font HeaderFont
+        public override Font Font
         {
             get { return lblHeaderTextDisplay.Font; }
             set { lblHeaderTextDisplay.Font = value; }
         }
 
-        [Browsable(true)]
-        [Category("Extra")]
-        [DisplayName("Header ForeColor")]
-        [DefaultValue(null)]
-        public Color ForeColor
+        /// <summary>
+        /// Foreground color used for displays header text
+        /// </summary>
+        public override Color ForeColor
         {
             get { return lblHeaderTextDisplay.ForeColor; }
             set { lblHeaderTextDisplay.ForeColor = value; }
         }
 
-        [Browsable(true)]
-        [Category("Extra")]
-        [DisplayName("Padding")]
-        [DefaultValue(null)]
-        public Padding Padding
-        {
-            get { return pExpanderContentBody.Padding; }
-            set { pExpanderContentBody.Padding = value; }
-        }
-
-        #endregion
-
-        #region Category: Menu Button
+        /// <summary>
+        /// Occurs when button has expanded or collapsed.
+        /// </summary>
+        public event EventHandler<StateChangedEventArgs> ExpandCollapse;
 
         /// <summary>
-        /// Handles the MouseEnter event of the btnHeaderMenuDisplay control.
+        /// Handles the Click event of the Header control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
+        /// <param name="sender">The sender.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void btnHeaderMenuDisplay_MouseEnter(object sender, EventArgs e)
+        protected virtual void OnMouseDown(object sender, EventArgs e)
         {
-            btnHeaderMenuDisplay.BackgroundImage = Images.MenuMouseOverBtnImage;
-        }
-
-        private void ucExpanderHeader_Load(object sender, EventArgs e)
-        {
+            // just invert current state
+            IsExpanded = !IsExpanded;
         }
 
         /// <summary>
-        /// Handles the MouseLeave event of the btnHeaderMenuDisplay control.
+        /// Handles state changing.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void btnHeaderMenuDisplay_MouseLeave(object sender, EventArgs e)
+        protected virtual void OnExpandCollapse()
         {
-            btnHeaderMenuDisplay.BackgroundImage = Images.MenuBtnImage;
-        }
+            // set appropriate bitmap
+            pbHeaderPictureDisplay.BackgroundImage = _isExpanded ? Images.CollapsedImage : Images.ExpandedImage;
+            //lblHeader.ForeColor = _isExpanded ? Color.DarkGray : Color.SteelBlue;
 
-        #endregion
-
-        private void InitializeState()
-        {
-            if (_isExpanded == State.Expanded)
-            {
-                pbHeaderPictureDisplay.BackgroundImage = Images.CollapsedImage;
-                Size = new Size(Size.Width, _heightCache);
-            }
-            else
-            {
-                pbHeaderPictureDisplay.BackgroundImage = Images.ExpandedImage;
-                Size = new Size(Size.Width, _collapsedHeight);
-            }
-        }
-
-        private void ExpandCollapse()
-        {
-            if (_isExpanded == State.Expanded)
-            {
-                pbHeaderPictureDisplay.BackgroundImage = Images.CollapsedImage;
-                Size = new Size(Size.Width, _heightCache);
-                _isExpanded = State.Collapsed;
-            }
-            else
-            {
-                pbHeaderPictureDisplay.BackgroundImage = Images.ExpandedImage;
-                Size = new Size(Size.Width, 27);
-                _isExpanded = State.Expanded;
-            }
+            // and fire the event:
+            var handler = ExpandCollapse;
+            handler?.Invoke(this, new StateChangedEventArgs(_isExpanded));
         }
     }
 }
